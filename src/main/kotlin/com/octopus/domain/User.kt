@@ -4,9 +4,9 @@ import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.ResultRow
 
 object Users : LongIdTable() {
-    val email = varchar("email", 255)
-    val firstName = varchar("firstName", 255)
-    val lastName = varchar("lastName", 255)
+    val email = varchar("email", 50)
+    val firstName = varchar("firstName", 50)
+    val lastName = varchar("lastName", 50)
     // we could have added other properties like gender, wight, height, birthday, etc
 
     fun toUser(row: ResultRow): User {
