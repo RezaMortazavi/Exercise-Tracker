@@ -31,7 +31,7 @@ class UserController(private val userService: UserService) {
     }
 
     fun getUserByEmail(dsl: QueryDSL) {
-        dsl.description = "get a new user by email"
+        dsl.description = "get a user by email"
 
         dsl.resolver { email: String ->
             userService.getByEmail(email)

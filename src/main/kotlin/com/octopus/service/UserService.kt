@@ -14,7 +14,7 @@ class UserService(private val userRepository: IUserRepository) {
     }
 
     fun getAll(): List<User> {
-        return userRepository.findAll().ifEmpty { throw NotFoundException("User list is empty") }
+        return userRepository.findAll()
     }
 
     fun getById(id: Long): User {

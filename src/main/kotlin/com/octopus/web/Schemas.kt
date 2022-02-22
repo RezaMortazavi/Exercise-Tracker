@@ -1,8 +1,8 @@
 package com.octopus.web
 
 import com.apurebase.kgraphql.schema.dsl.SchemaBuilder
-import com.octopus.domain.User
-import com.octopus.domain.UserInput
+import com.octopus.domain.*
+import com.octopus.web.controller.ExerciseController
 import com.octopus.web.controller.UserController
 
 fun SchemaBuilder.userSchema(userController: UserController) {
@@ -29,5 +29,39 @@ fun SchemaBuilder.userSchema(userController: UserController) {
 
     mutation("createUser") {
         userController.register(this)
+    }
+}
+
+fun SchemaBuilder.exerciseSchema(exerciseController: ExerciseController) {
+
+    inputType<ExerciseInput>{
+        description = "The input of the exercise without the identifier"
+    }
+
+    type<Exercise>{
+        description = "Exercise object"
+    }
+
+    enum<ExerciseType>()
+    enum<ExerciseDifficulty>()
+
+    query("exercises") {
+        exerciseController.getAll(this)
+    }
+
+    query("exerciseById") {
+        exerciseController.getExerciseById(this)
+    }
+
+    query("exerciseByType") {
+        exerciseController.getAllByType(this)
+    }
+
+    query("exerciseByDifficulty") {
+        exerciseController.getAllByDifficulty(this)
+    }
+
+    mutation("createExercise") {
+        exerciseController.create(this)
     }
 }
