@@ -4,6 +4,15 @@ import com.apurebase.kgraphql.schema.dsl.SchemaBuilder
 import com.octopus.domain.*
 import com.octopus.web.controller.ExerciseController
 import com.octopus.web.controller.UserController
+import com.octopus.web.controller.UserEventController
+import java.util.*
+
+fun SchemaBuilder.addScalars() {
+    stringScalar<UUID> {
+        deserialize = { uuid: String -> UUID.fromString(uuid) }
+        serialize = { uuid: UUID -> uuid.toString() }
+    }
+}
 
 fun SchemaBuilder.userSchema(userController: UserController) {
 
@@ -63,5 +72,24 @@ fun SchemaBuilder.exerciseSchema(exerciseController: ExerciseController) {
 
     mutation("createExercise") {
         exerciseController.create(this)
+    }
+}
+
+fun SchemaBuilder.userEventsSchema(userEventController: UserEventController) {
+
+    inputType<UserEventInput>{
+        description = "The input to generate an event for a user"
+    }
+
+    type<UserEvent>{
+        description = "UserEvent object"
+    }
+
+    query("userEvents") {
+        userEventController.getUserEvents(this)
+    }
+
+    mutation("generateEvent") {
+        userEventController.generateUserEvent(this)
     }
 }

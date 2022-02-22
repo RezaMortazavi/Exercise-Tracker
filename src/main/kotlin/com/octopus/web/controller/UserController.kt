@@ -5,6 +5,7 @@ import com.apurebase.kgraphql.schema.dsl.operations.QueryDSL
 import com.octopus.domain.User
 import com.octopus.domain.UserInput
 import com.octopus.service.UserService
+import java.util.*
 
 class UserController(private val userService: UserService) {
 
@@ -25,7 +26,7 @@ class UserController(private val userService: UserService) {
 
     fun getUserById(dsl: QueryDSL) {
         dsl.description = "get a new user by id"
-        dsl.resolver { uid: Long ->
+        dsl.resolver { uid: UUID ->
             userService.getById(uid)
         }
     }

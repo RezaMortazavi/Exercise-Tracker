@@ -32,9 +32,9 @@ dependencies {
     implementation("com.apurebase:kgraphql:$kgraphqlVersion")
     implementation("com.apurebase:kgraphql-ktor:$kgraphqlVersion")
 
-    implementation("com.h2database:h2:$h2Version")
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("com.h2database:h2:$h2Version")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
 
     implementation("io.insert-koin:koin-ktor:$koinVersion")
@@ -42,5 +42,5 @@ dependencies {
 
 
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
 }

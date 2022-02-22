@@ -1,9 +1,10 @@
 package com.octopus.domain
 
-import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.ResultRow
+import java.util.*
 
-object Users : LongIdTable() {
+object Users : UUIDTable() {
     val email = varchar("email", 50)
     val firstName = varchar("firstName", 50)
     val lastName = varchar("lastName", 50)
@@ -20,7 +21,7 @@ object Users : LongIdTable() {
 }
 
 data class User(
-    val id: Long? = null,
+    val id: UUID? = null,
     val email: String,
     val firstName: String,
     val lastName: String,

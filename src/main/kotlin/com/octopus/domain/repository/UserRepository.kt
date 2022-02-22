@@ -4,6 +4,7 @@ import com.octopus.domain.User
 import com.octopus.domain.Users
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.*
 
 class UserRepository : IUserRepository {
     init {
@@ -32,7 +33,7 @@ class UserRepository : IUserRepository {
         }
     }
 
-    override fun findById(id: Long): User? {
+    override fun findById(id: UUID): User? {
         return transaction {
             Users
                 .select { Users.id eq id }
