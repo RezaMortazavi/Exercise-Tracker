@@ -2,6 +2,7 @@ package com.octopus.web.controller
 
 import com.apurebase.kgraphql.schema.dsl.operations.MutationDSL
 import com.apurebase.kgraphql.schema.dsl.operations.QueryDSL
+import com.octopus.domain.UpdateUserEventInput
 import com.octopus.domain.UserEventInput
 import com.octopus.service.UserEventService
 import org.slf4j.LoggerFactory
@@ -18,6 +19,17 @@ class UserEventController(private val service: UserEventService) {
                 log.debug("[generateUserEvent] event: $eventInput")
 
                 service.generateUserEvent(eventInput.userId, eventInput.exerciseId)
+            }
+        }
+    }
+
+    fun updateEvent(dsl: MutationDSL) {
+        dsl.apply {
+            description = "Update UserEvent"
+            resolver { eventId: UUID, eventInput: UpdateUserEventInput ->
+                log.debug("[updateEvent] event: $eventInput")
+
+                service.updateEvent(eventId, eventInput.progress)
             }
         }
     }

@@ -92,4 +92,8 @@ fun SchemaBuilder.userEventsSchema(userEventController: UserEventController) {
     mutation("generateEvent") {
         userEventController.generateUserEvent(this)
     }
+
+    mutation("updateEvent") {
+        userEventController.updateEvent(this)
+    }
 }

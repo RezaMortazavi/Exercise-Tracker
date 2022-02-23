@@ -1,13 +1,16 @@
 package com.octopus.service
 
 import com.octopus.domain.UserEvent
+import com.octopus.domain.repository.IExerciseRepository
 import com.octopus.domain.repository.IUserEventRepository
+import com.octopus.domain.repository.IUserRepository
+import com.octopus.exception.NotFoundException
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
-class UserEventService(private val repository: IUserEventRepository,
-                       private val userService: UserService,
-                       private val exerciseService: ExerciseService) {
+class UserEventService(private val userEventRepository: IUserEventRepository,
+                       private val userRepository: IUserRepository,
+                       private val exerciseRepository: IExerciseRepository) {
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -15,21 +18,34 @@ class UserEventService(private val repository: IUserEventRepository,
         log.debug("[generateUserEvent] userId: $userId, exerciseId: $exerciseId")
 
         // throws exception if user nor exercise found
-        userService.getById(userId)
-        exerciseService.getById(exerciseId)
+        userRepository.findById(userId) ?: throw NotFoundException("User not found")
+        val exercise = exerciseRepository.findById(exerciseId) ?: throw NotFoundException("Exercise not found")
 
-        return repository.create(userId, exerciseId).also {
+        return userEventRepository.create(userId, exercise).also {
             log.debug("[generateUserEvent] generatedEvent: $it")
         }
+    }
+
+    fun updateEvent(eventId: UUID, progress: Long): UserEvent {
+        log.debug("[updateEvent] eventId: $eventId, progress: $progress")
+
+        val userEvent = userEventRepository.findEventById(eventId) ?: throw NotFoundException("Event not found")
+
+        val isCompleted = userEvent.isCompleted || progress >= userEvent.exercise.duration
+
+        return userEventRepository.update(userEvent.copy(progress = progress, isCompleted = isCompleted))!!.also {
+            log.debug("[updateEvent] Updated Event: $it")
+        }
+
     }
 
     fun getUserEvents(userId: UUID): List<UserEvent> {
         log.debug("[getUserEvents] userId: $userId")
 
-        // throws exception if user nor exercise found
-        userService.getById(userId)
+        // throws exception if user not found
+        userRepository.findById(userId) ?: throw NotFoundException("User not found")
 
-        return repository.findUserEvents(userId).also {
+        return userEventRepository.findUserEvents(userId).also {
             log.debug("[getUserEvents] found events: $it")
         }
     }

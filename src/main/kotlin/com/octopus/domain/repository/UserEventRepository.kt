@@ -1,16 +1,21 @@
 package com.octopus.domain.repository
 
-import com.octopus.domain.UserEvent
-import com.octopus.domain.UserEvents
+import com.octopus.domain.*
 import com.octopus.exception.WrongArgumentException
 import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.insertAndGetId
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
+
+
+interface IUserEventRepository {
+    fun create(userId: UUID, exercise: ExerciseDao): UserEvent
+    fun update(userEvent: UserEvent): UserEvent?
+    fun findEventById(eventId: UUID): UserEvent?
+    fun findUserEvents(userId: UUID): List<UserEvent>
+}
 
 class UserEventRepository : IUserEventRepository {
 
@@ -22,25 +27,20 @@ class UserEventRepository : IUserEventRepository {
         }
     }
 
-    override fun create(userId: UUID, exerciseId: Long): UserEvent {
-        log.debug("[create] userId: $userId, exerciseId: $exerciseId")
+    override fun create(userId: UUID, exercise: ExerciseDao): UserEvent {
+        log.debug("[create] userId: $userId, exerciseId: ${exercise.id}")
 
         val now = Instant.now().epochSecond
-        val userEvent = UserEvent(
-            userId = userId, exerciseId = exerciseId,
-            createdAt = now, updatedAt = now, progress = 0, isCompleted = false
-        )
+
         return transaction {
-            userEvent.copy(
-                id = UserEvents.insertAndGetId { row ->
-                    row[this.userId] = userEvent.userId
-                    row[this.exerciseId] = userEvent.exerciseId
-                    row[this.createdAt] = userEvent.createdAt
-                    row[this.updatedAt] = userEvent.updatedAt
-                    row[this.progress] = userEvent.progress
-                    row[this.isCompleted] = userEvent.isCompleted
-                }.value
-            )
+            UserEventEntity.new {
+                this.userId = userId
+                this.exercise = exercise
+                this.createdAt = now
+                this.updatedAt = now
+                this.progress = 0
+                this.isCompleted = false
+            }.toUserEvent()
         }
     }
 
@@ -62,21 +62,12 @@ class UserEventRepository : IUserEventRepository {
     override fun findEventById(eventId: UUID): UserEvent? {
         log.debug("[findEventById] eventId: $eventId")
 
-        return transaction {
-            UserEvents
-                .select { UserEvents.id eq eventId }
-                .map { UserEvents.toUserEvent(it) }
-                .firstOrNull()
-        }
+        return transaction { UserEventEntity.findById(eventId)?.toUserEvent() }
     }
 
     override fun findUserEvents(userId: UUID): List<UserEvent> {
         log.debug("[findUserEvents] userId: $userId")
 
-        return transaction {
-            UserEvents
-                .select { UserEvents.userId eq userId }
-                .map { UserEvents.toUserEvent(it) }
-        }
+        return transaction { UserEventEntity.find { UserEvents.userId eq userId }.map { it.toUserEvent() } }
     }
 }

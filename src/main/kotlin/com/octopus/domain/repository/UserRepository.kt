@@ -6,6 +6,13 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
+interface IUserRepository {
+    fun create(user: User): User
+    fun findAll(): List<User>
+    fun findById(id: UUID): User?
+    fun findByEmail(email: String): User?
+}
+
 class UserRepository : IUserRepository {
     init {
         transaction {
