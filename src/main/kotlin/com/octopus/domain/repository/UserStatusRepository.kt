@@ -1,9 +1,7 @@
 package com.octopus.domain.repository
 
-import com.octopus.domain.Exercises
 import com.octopus.domain.UserStatus
 import com.octopus.domain.UserStatuses
-import com.octopus.domain.Users
 import com.octopus.exception.WrongArgumentException
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -11,10 +9,8 @@ import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 interface IUserStatusRepository {
     fun create(userId: UUID): UserStatus

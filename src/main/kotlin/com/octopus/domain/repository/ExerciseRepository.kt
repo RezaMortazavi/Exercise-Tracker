@@ -1,16 +1,22 @@
 package com.octopus.domain.repository
 
-import com.octopus.domain.*
+import com.octopus.domain.Exercise
+import com.octopus.domain.ExerciseDifficulty
+import com.octopus.domain.ExerciseType
+import com.octopus.domain.Exercises
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 
 interface IExerciseRepository {
-    fun create(exercise: Exercise): ExerciseDao
-    fun findById(id: Long): ExerciseDao?
-    fun findAll(): List<ExerciseDao>
-    fun findByType(type: ExerciseType): List<ExerciseDao>
-    fun findByDifficulty(difficulty: ExerciseDifficulty): List<ExerciseDao>
+    fun create(exercise: Exercise): Exercise
+    fun findById(id: Long): Exercise?
+    fun findAll(): List<Exercise>
+    fun findByType(type: ExerciseType): List<Exercise>
+    fun findByDifficulty(difficulty: ExerciseDifficulty): List<Exercise>
 }
 
 class ExerciseRepository : IExerciseRepository {
@@ -20,43 +26,48 @@ class ExerciseRepository : IExerciseRepository {
         }
     }
 
-    override fun create(exercise: Exercise): ExerciseDao {
+    override fun create(exercise: Exercise): Exercise {
         return transaction {
-            ExerciseDao.new {
-                title = exercise.title
-                description = exercise.description
-                duration = exercise.duration
-                type = exercise.type
-                difficulty = exercise.difficulty
-            }
+            exercise.copy(id = Exercises.insertAndGetId { row ->
+                row[title] = exercise.title
+                row[description] = exercise.description
+                row[duration] = exercise.duration
+                row[type] = exercise.type
+                row[difficulty] = exercise.difficulty
+            }.value)
         }
     }
 
-    override fun findById(id: Long): ExerciseDao? {
+    override fun findById(id: Long): Exercise? {
         return transaction {
-            ExerciseDao.findById(id)
+            Exercises
+                .select { Exercises.id eq id }
+                .map { Exercises.toExercise(it) }
+                .firstOrNull()
         }
     }
 
-    override fun findAll(): List<ExerciseDao> {
+    override fun findAll(): List<Exercise> {
         return transaction {
-            ExerciseDao.all().toList()
+            Exercises
+                .selectAll()
+                .map { Exercises.toExercise(it) }
         }
     }
 
-    override fun findByType(type: ExerciseType): List<ExerciseDao> {
+    override fun findByType(type: ExerciseType): List<Exercise> {
         return transaction {
-            ExerciseDao
-                .find { Exercises.type eq type }
-                .toList()
+            Exercises
+                .select { Exercises.type eq type }
+                .map { Exercises.toExercise(it) }
         }
     }
 
-    override fun findByDifficulty(difficulty: ExerciseDifficulty): List<ExerciseDao> {
+    override fun findByDifficulty(difficulty: ExerciseDifficulty): List<Exercise> {
         return transaction {
-            ExerciseDao
-                .find { Exercises.difficulty eq difficulty }
-                .toList()
+            Exercises
+                .select { Exercises.difficulty eq difficulty }
+                .map { Exercises.toExercise(it) }
         }
     }
 }

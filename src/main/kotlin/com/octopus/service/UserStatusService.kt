@@ -4,7 +4,7 @@ import com.octopus.domain.UserStatus
 import com.octopus.domain.repository.IUserStatusRepository
 import com.octopus.exception.NotFoundException
 import org.slf4j.LoggerFactory
-import java.util.UUID
+import java.util.*
 
 class UserStatusService(private val repository: IUserStatusRepository) {
     private val log = LoggerFactory.getLogger(this::class.java)

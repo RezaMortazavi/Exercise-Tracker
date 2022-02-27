@@ -4,8 +4,7 @@ import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
-import java.util.Date
-import java.util.UUID
+import java.util.*
 
 object UserStatuses : LongIdTable() {
     val userId = uuid("user_id").references(Users.id).index()

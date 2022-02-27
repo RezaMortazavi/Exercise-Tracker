@@ -1,76 +1,71 @@
 package com.octopus.domain.repository
 
-import com.octopus.domain.ExerciseDao
 import com.octopus.domain.UserEvent
-import com.octopus.domain.UserEventEntity
 import com.octopus.domain.UserEvents
 import com.octopus.exception.WrongArgumentException
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import org.slf4j.LoggerFactory
-import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 
 
 interface IUserEventRepository {
-    fun create(userId: UUID, exercise: ExerciseDao): UserEvent
+    fun create(userId: UUID, exerciseId: Long): UserEvent
     fun update(userEvent: UserEvent): UserEvent?
     fun findEventById(eventId: UUID): UserEvent?
     fun findUserEvents(userId: UUID): List<UserEvent>
 }
 
 class UserEventRepository : IUserEventRepository {
-
-    private val log = LoggerFactory.getLogger(this::class.java)
-
     init {
         transaction {
             SchemaUtils.create(UserEvents)
         }
     }
-
-    override fun create(userId: UUID, exercise: ExerciseDao): UserEvent {
-        log.debug("[create] userId: $userId, exerciseId: ${exercise.id}")
-
-        val now = Instant.now().epochSecond
-
+    override fun create(userId: UUID, exerciseId: Long): UserEvent {
         return transaction {
-            UserEventEntity.new {
-                this.userId = userId
-                this.exercise = exercise
-                this.createdAt = now
-                this.updatedAt = now
-                this.progress = 0
-                this.isCompleted = false
-            }.toUserEvent()
+            val id = UserEvents.insertAndGetId { row ->
+                row[this.userId] = userId
+                row[this.exerciseId] = exerciseId
+            }.value
+
+            findEventById(id)!!
         }
     }
 
     override fun update(userEvent: UserEvent): UserEvent? {
-        log.debug("[update] userEvent: $userEvent")
-
-        val id = userEvent.id ?: throw WrongArgumentException("Event Id is missing")
+        val id = userEvent.id ?: throw WrongArgumentException("UserStatus id is missing")
+        val now = LocalDateTime.now()
 
         transaction {
-            UserEvents.update({ UserEvents.id eq id }) { row ->
-                row[this.updatedAt] = Instant.now().epochSecond
+            UserEvents.update({ UserEvents.id eq id}) { row ->
+                row[this.updateTime] = now
                 row[this.progress] = userEvent.progress
                 row[this.isCompleted] = userEvent.isCompleted
             }
         }
+
         return findEventById(id)
     }
 
     override fun findEventById(eventId: UUID): UserEvent? {
-        log.debug("[findEventById] eventId: $eventId")
-
-        return transaction { UserEventEntity.findById(eventId)?.toUserEvent() }
+        return transaction {
+            UserEvents
+                .select { UserEvents.id eq eventId}
+                .map { UserEvents.toUserEvent(it) }
+                .firstOrNull()
+        }
     }
 
     override fun findUserEvents(userId: UUID): List<UserEvent> {
-        log.debug("[findUserEvents] userId: $userId")
-
-        return transaction { UserEventEntity.find { UserEvents.userId eq userId }.map { it.toUserEvent() } }
+        return transaction {
+            UserEvents
+                .select { UserEvents.userId eq userId}
+                .map { UserEvents.toUserEvent(it) }
+        }
     }
+
 }

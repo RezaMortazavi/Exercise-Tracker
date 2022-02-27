@@ -1,9 +1,7 @@
 package com.octopus.domain
 
-import org.jetbrains.exposed.dao.LongEntity
-import org.jetbrains.exposed.dao.LongEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.ResultRow
 
 object Exercises : LongIdTable() {
     val title = varchar("title", 50)
@@ -13,21 +11,16 @@ object Exercises : LongIdTable() {
     val duration = long("duration")
     val type = enumerationByName("type", 20, ExerciseType::class)
     val difficulty = enumerationByName("difficulty", 20, ExerciseDifficulty::class)
-}
 
-class ExerciseDao(id: EntityID<Long>) : LongEntity(id) {
-    companion object : LongEntityClass<ExerciseDao>(Exercises)
-
-    var title by Exercises.title
-    var description by Exercises.description
-    var thumbnailUrl by Exercises.thumbnailUrl
-    var videoUrl by Exercises.videoUrl
-    var duration by Exercises.duration
-    var type by Exercises.type
-    var difficulty by Exercises.difficulty
-
-    fun toExercise(): Exercise {
-        return Exercise(id.value, title, description, thumbnailUrl, videoUrl, duration, type, difficulty)
+    fun toExercise(row: ResultRow): Exercise {
+        return Exercise(row[id].value,
+            row[title],
+            row[description],
+            row[thumbnailUrl],
+            row[videoUrl],
+            row[duration],
+            row[type],
+            row[difficulty])
     }
 }
 

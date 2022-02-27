@@ -6,7 +6,7 @@ import com.octopus.config.ModuleConfig
 import com.octopus.helper.Scheduler
 import com.octopus.helper.SchedulerType
 import com.octopus.service.NotifierService
-import com.octopus.web.addScalars
+import com.octopus.web.addGenericScalars
 import com.octopus.web.controller.ExerciseController
 import com.octopus.web.controller.UserController
 import com.octopus.web.controller.UserEventController
@@ -14,12 +14,10 @@ import com.octopus.web.exerciseSchema
 import com.octopus.web.userEventsSchema
 import com.octopus.web.userSchema
 import io.ktor.application.*
-import io.ktor.features.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.launch
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
-import org.slf4j.event.Level
 
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
@@ -39,7 +37,7 @@ fun Application.module() {
         playground = true // for testing
         wrapErrors = true // for testing
         schema {
-            addScalars()
+            addGenericScalars()
             userSchema(userController)
             exerciseSchema(exerciseController)
             userEventsSchema(userEventController)

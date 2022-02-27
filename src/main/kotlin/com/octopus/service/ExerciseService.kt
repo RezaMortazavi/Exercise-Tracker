@@ -8,22 +8,22 @@ import com.octopus.exception.NotFoundException
 
 class ExerciseService(private val exerciseRepository: IExerciseRepository) {
     fun create(exercise: Exercise): Exercise {
-        return exerciseRepository.create(exercise).toExercise()
+        return exerciseRepository.create(exercise)
     }
 
     fun getAll(): List<Exercise> {
-        return exerciseRepository.findAll().map { it.toExercise() }
+        return exerciseRepository.findAll()
     }
 
     fun getById(id: Long): Exercise {
-        return exerciseRepository.findById(id)?.toExercise() ?: throw NotFoundException("Exercise not found with id: $id")
+        return exerciseRepository.findById(id) ?: throw NotFoundException("Exercise not found with id: $id")
     }
 
     fun getAllByType(type: ExerciseType): List<Exercise> {
-        return exerciseRepository.findByType(type).map { it.toExercise() }
+        return exerciseRepository.findByType(type)
     }
 
     fun getAllByDifficulty(difficulty: ExerciseDifficulty): List<Exercise> {
-        return exerciseRepository.findByDifficulty(difficulty).map { it.toExercise() }
+        return exerciseRepository.findByDifficulty(difficulty)
     }
 }

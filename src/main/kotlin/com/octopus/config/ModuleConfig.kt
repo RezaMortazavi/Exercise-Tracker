@@ -27,17 +27,17 @@ object ModuleConfig {
 
     private val userEventModule = module {
         single { UserEventController(get()) } // get() Will resolve UserService
-        single { UserEventService(get(), get(), get(), get()) } // get() Will resolve IUserEventRepository, IUserRepository, IExerciseRepository, UserStatusService
+        single { UserEventService(get(), get(), get(), get()) } // get() Will resolve IUserEventRepository, UserService, ExerciseService, UserStatusService
         single<IUserEventRepository> { UserEventRepository() }
     }
 
     private val userStatusModule = module {
-        single { UserStatusService(get()) }
+        single { UserStatusService(get()) } // get() Will resolve IUserStatusRepository
         single<IUserStatusRepository> { UserStatusRepository() }
     }
 
     private val notificationModule = module {
-        single { NotificationService(get()) }
+        single { NotificationService(get()) } // get() Will resolve INotificationRepository
         single<INotificationRepository> { NotificationRepository() }
     }
 

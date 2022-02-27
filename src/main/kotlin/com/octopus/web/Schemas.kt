@@ -6,12 +6,20 @@ import com.octopus.web.controller.ExerciseController
 import com.octopus.web.controller.UserController
 import com.octopus.web.controller.UserEventController
 import io.ktor.util.date.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
-fun SchemaBuilder.addScalars() {
+fun SchemaBuilder.addGenericScalars() {
     stringScalar<UUID> {
         deserialize = { uuid: String -> UUID.fromString(uuid) }
         serialize = { uuid: UUID -> uuid.toString() }
+    }
+
+    stringScalar<LocalDateTime> {
+        val format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        serialize = { date -> date.format(format) }
+        deserialize = { str -> LocalDateTime.parse(str, format) }
     }
 }
 
