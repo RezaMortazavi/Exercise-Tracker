@@ -5,6 +5,7 @@ import com.octopus.domain.*
 import com.octopus.web.controller.ExerciseController
 import com.octopus.web.controller.UserController
 import com.octopus.web.controller.UserEventController
+import io.ktor.util.date.*
 import java.util.*
 
 fun SchemaBuilder.addScalars() {
@@ -23,6 +24,8 @@ fun SchemaBuilder.userSchema(userController: UserController) {
     type<User>{
         description = "User object"
     }
+
+    enum<WeekDay>()
 
     query("users") {
         userController.getAll(this)

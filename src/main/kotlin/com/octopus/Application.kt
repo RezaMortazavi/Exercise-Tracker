@@ -3,6 +3,9 @@ package com.octopus
 import com.apurebase.kgraphql.GraphQL
 import com.octopus.config.DatabaseFactory
 import com.octopus.config.ModuleConfig
+import com.octopus.helper.Scheduler
+import com.octopus.helper.SchedulerType
+import com.octopus.service.NotifierService
 import com.octopus.web.addScalars
 import com.octopus.web.controller.ExerciseController
 import com.octopus.web.controller.UserController
@@ -12,8 +15,8 @@ import com.octopus.web.userEventsSchema
 import com.octopus.web.userSchema
 import io.ktor.application.*
 import io.ktor.features.*
-import io.ktor.request.*
 import io.ktor.server.netty.*
+import kotlinx.coroutines.launch
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
 import org.slf4j.event.Level
@@ -29,20 +32,29 @@ fun Application.module() {
     DatabaseFactory.connect()
 
     install(Koin) {
-        modules(ModuleConfig.userModule, ModuleConfig.exerciseModule, ModuleConfig.userEventModule)
-    }
-
-    install(CallLogging) {
-        level = Level.INFO
+        modules(ModuleConfig.modules())
     }
 
     install(GraphQL) {
-        playground = true
+        playground = true // for testing
+        wrapErrors = true // for testing
         schema {
             addScalars()
             userSchema(userController)
             exerciseSchema(exerciseController)
             userEventsSchema(userEventController)
+        }
+    }
+
+    runNotifierJob()
+}
+
+fun Application.runNotifierJob() {
+    val notifierService: NotifierService by inject()
+    val scheduler = Scheduler.create(SchedulerType.HOURLY)
+    launch {
+        scheduler.schedule {
+            notifierService.notifyEligibleUsers()
         }
     }
 }

@@ -8,8 +8,8 @@ import org.jetbrains.exposed.dao.id.LongIdTable
 object Exercises : LongIdTable() {
     val title = varchar("title", 50)
     val description = varchar("description", 255)
-    val thumbnailUrl = varchar("thumbnailUrl", 100).nullable()
-    val videoUrl = varchar("videoUrl", 100).nullable()
+    val thumbnailUrl = varchar("thumbnail_url", 100).nullable()
+    val videoUrl = varchar("video_url", 100).nullable()
     val duration = long("duration")
     val type = enumerationByName("type", 20, ExerciseType::class)
     val difficulty = enumerationByName("difficulty", 20, ExerciseDifficulty::class)

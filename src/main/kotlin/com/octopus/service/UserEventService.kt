@@ -6,11 +6,12 @@ import com.octopus.domain.repository.IUserEventRepository
 import com.octopus.domain.repository.IUserRepository
 import com.octopus.exception.NotFoundException
 import org.slf4j.LoggerFactory
-import java.util.UUID
+import java.util.*
 
 class UserEventService(private val userEventRepository: IUserEventRepository,
                        private val userRepository: IUserRepository,
-                       private val exerciseRepository: IExerciseRepository) {
+                       private val exerciseRepository: IExerciseRepository,
+                       private val userStatusService: UserStatusService) {
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -23,6 +24,7 @@ class UserEventService(private val userEventRepository: IUserEventRepository,
 
         return userEventRepository.create(userId, exercise).also {
             log.debug("[generateUserEvent] generatedEvent: $it")
+            hitUserActivity(userId)
         }
     }
 
@@ -35,6 +37,7 @@ class UserEventService(private val userEventRepository: IUserEventRepository,
 
         return userEventRepository.update(userEvent.copy(progress = progress, isCompleted = isCompleted))!!.also {
             log.debug("[updateEvent] Updated Event: $it")
+            hitUserActivity(it.userId)
         }
 
     }
@@ -49,4 +52,6 @@ class UserEventService(private val userEventRepository: IUserEventRepository,
             log.debug("[getUserEvents] found events: $it")
         }
     }
+
+    private fun hitUserActivity(userId: UUID) = userStatusService.recordActivity(userId)
 }

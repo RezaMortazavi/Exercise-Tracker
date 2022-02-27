@@ -6,7 +6,7 @@ import com.octopus.domain.UpdateUserEventInput
 import com.octopus.domain.UserEventInput
 import com.octopus.service.UserEventService
 import org.slf4j.LoggerFactory
-import java.util.UUID
+import java.util.*
 
 class UserEventController(private val service: UserEventService) {
 

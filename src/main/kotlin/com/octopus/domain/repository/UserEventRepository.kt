@@ -1,6 +1,9 @@
 package com.octopus.domain.repository
 
-import com.octopus.domain.*
+import com.octopus.domain.ExerciseDao
+import com.octopus.domain.UserEvent
+import com.octopus.domain.UserEventEntity
+import com.octopus.domain.UserEvents
 import com.octopus.exception.WrongArgumentException
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -47,7 +50,7 @@ class UserEventRepository : IUserEventRepository {
     override fun update(userEvent: UserEvent): UserEvent? {
         log.debug("[update] userEvent: $userEvent")
 
-        val id = userEvent.id ?: throw WrongArgumentException("Event Id can not be null")
+        val id = userEvent.id ?: throw WrongArgumentException("Event Id is missing")
 
         transaction {
             UserEvents.update({ UserEvents.id eq id }) { row ->

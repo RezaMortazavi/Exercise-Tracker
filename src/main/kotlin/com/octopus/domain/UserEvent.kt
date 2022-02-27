@@ -4,14 +4,14 @@ import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.UUIDTable
-import java.util.UUID
+import java.util.*
 
 
 object UserEvents : UUIDTable() {
-    val userId = uuid("userId").references(Users.id).index() // points to User table
+    val userId = uuid("user_id").references(Users.id).index() // points to User table
     val exercise = reference("exercise", Exercises)   // points to Exercise table
-    val createdAt = long("createdAt")
-    val updatedAt = long("updatedAt")
+    val createdAt = long("create_time")
+    val updatedAt = long("update_time")
     val progress = long("progress")
     val isCompleted = bool("isCompleted")
 }

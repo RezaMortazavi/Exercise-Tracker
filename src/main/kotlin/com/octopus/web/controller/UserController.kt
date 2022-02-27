@@ -2,6 +2,7 @@ package com.octopus.web.controller
 
 import com.apurebase.kgraphql.schema.dsl.operations.MutationDSL
 import com.apurebase.kgraphql.schema.dsl.operations.QueryDSL
+import com.octopus.domain.Notifier
 import com.octopus.domain.User
 import com.octopus.domain.UserInput
 import com.octopus.service.UserService
@@ -13,7 +14,12 @@ class UserController(private val userService: UserService) {
         dsl.description = "Create a new user"
         dsl.resolver { userInput: UserInput ->
             val user = User(email = userInput.email, firstName = userInput.firstName, lastName = userInput.lastName)
-            userService.create(user)
+            val notifiers = userInput.notifiers?.let { notifierInput ->
+                notifierInput.weekDay.map { weekDay ->
+                    Notifier(weekDay = weekDay, hour = notifierInput.hour)
+                }
+            }
+            userService.create(user, notifiers)
         }
     }
 
