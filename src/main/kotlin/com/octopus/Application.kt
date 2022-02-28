@@ -15,6 +15,7 @@ import com.octopus.web.userEventsSchema
 import com.octopus.web.userSchema
 import io.ktor.application.*
 import io.ktor.server.netty.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
@@ -22,12 +23,14 @@ import org.koin.ktor.ext.inject
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
+@ExperimentalCoroutinesApi
 fun Application.module() {
     val userController: UserController by inject()
     val exerciseController: ExerciseController by inject()
     val userEventController: UserEventController by inject()
 
     DatabaseFactory.connect()
+    DatabaseFactory.createTables() // for testing
 
     install(Koin) {
         modules(ModuleConfig.modules())

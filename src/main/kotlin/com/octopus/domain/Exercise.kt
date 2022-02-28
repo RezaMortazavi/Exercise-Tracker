@@ -11,21 +11,21 @@ object Exercises : LongIdTable() {
     val duration = long("duration")
     val type = enumerationByName("type", 20, ExerciseType::class)
     val difficulty = enumerationByName("difficulty", 20, ExerciseDifficulty::class)
+}
 
-    fun toExercise(row: ResultRow): Exercise {
-        return Exercise(row[id].value,
-            row[title],
-            row[description],
-            row[thumbnailUrl],
-            row[videoUrl],
-            row[duration],
-            row[type],
-            row[difficulty])
-    }
+fun Exercises.toExercise(row: ResultRow): Exercise {
+    return Exercise(row[id].value,
+        row[title],
+        row[description],
+        row[thumbnailUrl],
+        row[videoUrl],
+        row[duration],
+        row[type],
+        row[difficulty])
 }
 
 data class Exercise(
-    val id: Long? = null,
+    val id: Long,
     val title: String,
     val description: String,
     val thumbnailUrl: String? = null,
@@ -35,12 +35,14 @@ data class Exercise(
     val difficulty: ExerciseDifficulty,
 )
 
-data class ExerciseInput(
+data class NewExercise(
     val title: String,
     val description: String,
+    val thumbnailUrl: String? = null,
+    val videoUrl: String? = null,
     val duration: Long,
     val type: ExerciseType,
-    val difficulty: ExerciseDifficulty
+    val difficulty: ExerciseDifficulty,
 )
 
 enum class ExerciseType {

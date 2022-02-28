@@ -12,25 +12,27 @@ object Notifiers : LongIdTable() {
     init {
         index(isUnique = false, weekDay, hour)
     }
+}
 
-    fun toNotifier(row: ResultRow): Notifier {
-        return Notifier(
-            id = row[id].value,
-            userId = row[userId],
-            weekDay = row[weekDay],
-            hour = row[hour]
-        )
-    }
+
+fun Notifiers.toNotifier(row: ResultRow): Notifier {
+    return Notifier(
+        id = row[id].value,
+        userId = row[userId],
+        weekDay = row[weekDay],
+        hour = row[hour]
+    )
 }
 
 data class Notifier (
-    val id: Long? = null,
-    val userId: UUID? = null,
+    val id: Long,
+    val userId: UUID,
     val weekDay: Int,
-    val hour: Int,
+    val hour: Int
 )
 
-data class NotifierInput(
-    val weekDay: List<Int>,
+data class NewNotifier (
+    val userId: UUID? = null,
+    val weekDay: Int,
     val hour: Int
 )

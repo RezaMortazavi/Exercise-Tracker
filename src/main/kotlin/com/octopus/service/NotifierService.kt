@@ -1,6 +1,6 @@
 package com.octopus.service
 
-import com.octopus.domain.Notifier
+import com.octopus.domain.NewNotifier
 import com.octopus.domain.User
 import com.octopus.domain.repository.INotifierRepository
 import org.slf4j.LoggerFactory
@@ -9,12 +9,12 @@ import java.util.*
 class NotifierService(private val repository: INotifierRepository, private val notificationService: NotificationService) {
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    fun createNotifiersForUer(notifiers: List<Notifier>) {
+    suspend fun createNotifiersForUer(notifiers: List<NewNotifier>) {
         log.debug("[createNotifiersForUer] notifiers: $notifiers")
         repository.batchCreate(notifiers)
     }
 
-    fun notifyEligibleUsers() {
+    suspend fun notifyEligibleUsers() {
         val notifiableUsers = findNotifiableUsers()
         if (notifiableUsers.isEmpty()) {
             log.debug("No registered users to be notified")
@@ -23,12 +23,12 @@ class NotifierService(private val repository: INotifierRepository, private val n
         }
     }
 
-    private fun sendNotificationToUsers(users: List<User>) = notificationService.sendNotification(users)
+    private suspend fun sendNotificationToUsers(users: List<User>) = notificationService.sendNotification(users)
 
     /**
      * Users registered to receive notification for current day and hour but not active today
      */
-    private fun findNotifiableUsers() = repository.findRegisteredUsersNotActiveToday(getCurrentDayOfWeek(), getCurrentHour())
+    private suspend fun findNotifiableUsers() = repository.findRegisteredUsersNotActiveToday(getCurrentDayOfWeek(), getCurrentHour())
 
     private fun getCurrentHour() = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
 

@@ -1,6 +1,7 @@
 package com.octopus.service
 
-import com.octopus.domain.Notifier
+import com.octopus.domain.NewNotifier
+import com.octopus.domain.NewUser
 import com.octopus.domain.User
 import com.octopus.domain.repository.IUserRepository
 import com.octopus.exception.NotFoundException
@@ -13,14 +14,13 @@ class UserService(private val userRepository: IUserRepository,
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    fun create(user: User, notifiers: List<Notifier>?): User {
+    suspend fun create(user: NewUser, notifiers: List<NewNotifier>?): User {
         userRepository.findByEmail(user.email).apply {
             require(this == null) { "Email already registered!" }
         }
 
         return userRepository.create(user).also { createdUser ->
             log.debug("[create] User created: $createdUser")
-            require(createdUser.id != null) { "Unable to create user" }
             // create notifiers for user if requested
             if (notifiers != null) {
                 createNotifier(createdUser.id, notifiers)
@@ -31,22 +31,20 @@ class UserService(private val userRepository: IUserRepository,
         }
     }
 
-    fun getAll(): List<User> {
-        return userRepository.findAll()
-    }
+    suspend fun getAll(): List<User> = userRepository.findAll()
 
-    fun getById(id: UUID): User {
+    suspend fun getById(id: UUID): User {
         return userRepository.findById(id) ?: throw NotFoundException("User not found with id: $id")
     }
 
-    fun getByEmail(email: String): User {
+    suspend fun getByEmail(email: String): User {
         return userRepository.findByEmail(email) ?: throw NotFoundException("User not found with email: $email")
     }
 
-    private fun createNotifier(userId: UUID, notifiers: List<Notifier>) {
-        val userNotifiers = notifiers.map { it.copy(userId = userId) }
+    private suspend fun createNotifier(userId: UUID, notifiers: List<NewNotifier>) {
+        val userNotifiers = notifiers.map { NewNotifier(userId, it.weekDay, it.hour) }
         notifierService.createNotifiersForUer(userNotifiers)
     }
 
-    private fun initUserStatus(userId: UUID) = userStatusService.initUserStatus(userId)
+    private suspend fun initUserStatus(userId: UUID) = userStatusService.initUserStatus(userId)
 }

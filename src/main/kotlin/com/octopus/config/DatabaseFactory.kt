@@ -1,8 +1,12 @@
 package com.octopus.config
 
+import com.octopus.domain.*
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
 
 
@@ -27,4 +31,20 @@ object DatabaseFactory {
         }
         return HikariDataSource(config)
     }
+
+    fun createTables() {
+        transaction {
+            SchemaUtils.create(Users)
+            SchemaUtils.create(Exercises)
+            SchemaUtils.create(UserEvents)
+            SchemaUtils.create(UserStatuses)
+            SchemaUtils.create(Notifiers)
+            SchemaUtils.create(Notifications)
+        }
+    }
+
+    suspend fun <T> dbQuery(
+        block: suspend () -> T
+    ): T =
+        newSuspendedTransaction { block() }
 }

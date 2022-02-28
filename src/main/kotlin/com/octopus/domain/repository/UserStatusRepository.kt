@@ -1,72 +1,64 @@
 package com.octopus.domain.repository
 
+import com.octopus.config.DatabaseFactory.dbQuery
 import com.octopus.domain.UserStatus
 import com.octopus.domain.UserStatuses
-import com.octopus.exception.WrongArgumentException
-import org.jetbrains.exposed.sql.SchemaUtils
+import com.octopus.domain.toUserStatus
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import java.time.LocalDateTime
 import java.util.*
 
 interface IUserStatusRepository {
-    fun create(userId: UUID): UserStatus
-    fun update(userStatus: UserStatus): UserStatus?
-    fun findById(id: Long): UserStatus?
-    fun findByUserId(userId: UUID): UserStatus?
+    suspend fun create(userId: UUID): UserStatus
+    suspend fun update(userStatus: UserStatus, overrideLastActiveTime: LocalDateTime? = null): UserStatus?
+    suspend fun findById(id: Long): UserStatus?
+    suspend fun findByUserId(userId: UUID): UserStatus?
 }
 
 class UserStatusRepository : IUserStatusRepository {
-    init {
-        transaction {
-            SchemaUtils.create(UserStatuses)
-        }
-    }
 
-    override fun create(userId: UUID): UserStatus {
+    override suspend fun create(userId: UUID): UserStatus {
         val now = LocalDateTime.now()
 
-        return transaction {
-            val id = UserStatuses.insertAndGetId { row ->
+        val id = dbQuery {
+            UserStatuses.insertAndGetId { row ->
                 row[this.userId] = userId
                 row[this.lastActivityAt] = now
             }.value
-
-            findById(id)!!
         }
+
+        return findById(id)!!
     }
 
-    override fun update(userStatus: UserStatus): UserStatus? {
-        val id = userStatus.id ?: throw WrongArgumentException("UserStatus id is missing")
-        val now = LocalDateTime.now()
+    override suspend fun update(userStatus: UserStatus, overrideLastActiveTime: LocalDateTime?): UserStatus? {
+        val id = userStatus.id
+        val lastActiveTime = overrideLastActiveTime ?: LocalDateTime.now()
 
-        transaction {
-            UserStatuses.update({UserStatuses.id eq id}) { row ->
-                row[this.lastActivityAt] = now
+        dbQuery {
+            UserStatuses.update({ UserStatuses.id eq id }) { row ->
+                row[this.lastActivityAt] = lastActiveTime
             }
         }
 
         return findById(id)
     }
 
-    override fun findById(id: Long): UserStatus? {
-        return transaction {
-            UserStatuses
-                .select(UserStatuses.id eq  id)
-                .map {  UserStatuses.toUserStatus(it) }
-                .firstOrNull()
-        }
+    override suspend fun findById(id: Long): UserStatus? = dbQuery {
+        UserStatuses
+            .select(UserStatuses.id eq id)
+            .map { UserStatuses.toUserStatus(it) }
+            .firstOrNull()
+
     }
 
-    override fun findByUserId(userId: UUID): UserStatus? {
-        return transaction {
-            UserStatuses
-                .select(UserStatuses.userId eq  userId)
-                .map {  UserStatuses.toUserStatus(it) }
-                .firstOrNull()
-        }
+    override suspend fun findByUserId(userId: UUID): UserStatus? = dbQuery {
+        UserStatuses
+            .select(UserStatuses.userId eq userId)
+            .map { UserStatuses.toUserStatus(it) }
+            .firstOrNull()
+
     }
 }

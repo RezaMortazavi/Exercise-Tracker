@@ -10,19 +10,25 @@ object Notifications : UUIDTable() {
     val userId = uuid("user_id").references(Users.id).index()
     val createTime = datetime("create_time").clientDefault { LocalDateTime.now() }
     val message = text("message")
+}
 
-    fun toNotification(row: ResultRow) : Notification {
-        return Notification(
-            id = row[id].value,
-            userId = row[userId],
-            createTime = row[createTime],
-            message = row[message],
-        )
-    }
+fun Notifications.toNotification(row: ResultRow) : Notification {
+    return Notification(
+        id = row[id].value,
+        userId = row[userId],
+        createTime = row[createTime],
+        message = row[message],
+    )
 }
 
 data class Notification(
-    val id: UUID? = null,
+    val id: UUID,
+    val userId: UUID,
+    val createTime: LocalDateTime? = null,
+    val message: String
+)
+
+data class NewNotification(
     val userId: UUID,
     val createTime: LocalDateTime? = null,
     val message: String

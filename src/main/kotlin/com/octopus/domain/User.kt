@@ -9,27 +9,26 @@ object Users : UUIDTable() {
     val firstName = varchar("first_name", 50)
     val lastName = varchar("last_name", 50)
     // we could have added other properties like gender, wight, height, birthday, etc
+}
 
-    fun toUser(row: ResultRow): User {
-        return User(
-            id = row[id].value,
-            email = row[email],
-            firstName = row[firstName],
-            lastName = row[lastName],
-        )
-    }
+fun Users.toUser(row: ResultRow): User {
+    return User(
+        id = row[id].value,
+        email = row[email],
+        firstName = row[firstName],
+        lastName = row[lastName],
+    )
 }
 
 data class User(
-    val id: UUID? = null,
+    val id: UUID,
     val email: String,
     val firstName: String,
     val lastName: String,
 )
 
-data class UserInput(
+data class NewUser(
     val email: String,
     val firstName: String,
-    val lastName: String,
-    val notifiers: NotifierInput? = null
+    val lastName: String
 )

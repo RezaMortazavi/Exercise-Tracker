@@ -5,6 +5,9 @@ import com.octopus.domain.*
 import com.octopus.web.controller.ExerciseController
 import com.octopus.web.controller.UserController
 import com.octopus.web.controller.UserEventController
+import com.octopus.web.model.ExerciseInput
+import com.octopus.web.model.UserEventInput
+import com.octopus.web.model.UserInput
 import io.ktor.util.date.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

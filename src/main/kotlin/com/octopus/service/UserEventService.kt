@@ -18,7 +18,7 @@ class UserEventService(private val userEventRepository: IUserEventRepository,
      *
      * Updates user's last active time
      */
-    fun generateUserEvent(userId: UUID, exerciseId: Long): UserEvent {
+    suspend fun generateUserEvent(userId: UUID, exerciseId: Long): UserEvent {
         log.debug("[generateUserEvent] userId: $userId, exerciseId: $exerciseId")
 
         // throws exception if user nor exercise found
@@ -33,28 +33,25 @@ class UserEventService(private val userEventRepository: IUserEventRepository,
 
     /**
      * Update event progress
-     * Marked as completed if progress is equal to event duration
+     * Marked as completed if user reached the end of the exerciseDuration (progress is equal to event duration)
      * Once marked as completed it will remain as it is and will not change by progress update
      *
      * Updates user's last active time
      */
-    fun updateEvent(eventId: UUID, progress: Long): UserEvent {
+    suspend fun updateEvent(eventId: UUID, progress: Long): UserEvent {
         log.debug("[updateEvent] eventId: $eventId, progress: $progress")
 
         val userEvent = userEventRepository.findEventById(eventId) ?: throw NotFoundException("Event not found")
 
-        val exercise = exerciseService.getById(userEvent.exerciseId)
-
-        val isCompleted = userEvent.isCompleted || progress >= exercise.duration
+        val isCompleted = isEventCompleted(userEvent, progress)
 
         return userEventRepository.update(userEvent.copy(progress = progress, isCompleted = isCompleted))!!.also {
             log.debug("[updateEvent] Updated Event: $it")
             hitUserActivity(it.userId)
         }
-
     }
 
-    fun getUserEvents(userId: UUID): List<UserEvent> {
+    suspend fun getUserEvents(userId: UUID): List<UserEvent> {
         log.debug("[getUserEvents] userId: $userId")
 
         // throws exception if user not found
@@ -65,5 +62,16 @@ class UserEventService(private val userEventRepository: IUserEventRepository,
         }
     }
 
-    private fun hitUserActivity(userId: UUID) = userStatusService.recordActivity(userId)
+    private suspend fun isEventCompleted(userEvent: UserEvent, progress: Long): Boolean {
+        var isCompleted = true
+        if (!userEvent.isCompleted) {
+            val exercise = exerciseService.getById(userEvent.exerciseId)
+            isCompleted = hasProgressReachedEnd(exercise.duration, progress)
+        }
+        return isCompleted
+    }
+
+    private fun hasProgressReachedEnd(exerciseDuration: Long, progress: Long) = progress >= exerciseDuration
+
+    private suspend fun hitUserActivity(userId: UUID) = userStatusService.recordActivity(userId)
 }

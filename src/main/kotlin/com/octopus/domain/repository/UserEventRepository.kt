@@ -1,47 +1,42 @@
 package com.octopus.domain.repository
 
+import com.octopus.config.DatabaseFactory.dbQuery
 import com.octopus.domain.UserEvent
 import com.octopus.domain.UserEvents
-import com.octopus.exception.WrongArgumentException
-import org.jetbrains.exposed.sql.SchemaUtils
+import com.octopus.domain.toUserEvent
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import java.time.LocalDateTime
 import java.util.*
 
 
 interface IUserEventRepository {
-    fun create(userId: UUID, exerciseId: Long): UserEvent
-    fun update(userEvent: UserEvent): UserEvent?
-    fun findEventById(eventId: UUID): UserEvent?
-    fun findUserEvents(userId: UUID): List<UserEvent>
+    suspend fun create(userId: UUID, exerciseId: Long): UserEvent
+    suspend fun update(userEvent: UserEvent): UserEvent?
+    suspend fun findEventById(eventId: UUID): UserEvent?
+    suspend fun findUserEvents(userId: UUID): List<UserEvent>
 }
 
 class UserEventRepository : IUserEventRepository {
-    init {
-        transaction {
-            SchemaUtils.create(UserEvents)
-        }
-    }
-    override fun create(userId: UUID, exerciseId: Long): UserEvent {
-        return transaction {
-            val id = UserEvents.insertAndGetId { row ->
+
+    override suspend fun create(userId: UUID, exerciseId: Long): UserEvent {
+        val id = dbQuery {
+            UserEvents.insertAndGetId { row ->
                 row[this.userId] = userId
                 row[this.exerciseId] = exerciseId
             }.value
-
-            findEventById(id)!!
         }
+
+        return findEventById(id)!!
     }
 
-    override fun update(userEvent: UserEvent): UserEvent? {
-        val id = userEvent.id ?: throw WrongArgumentException("UserStatus id is missing")
+    override suspend fun update(userEvent: UserEvent): UserEvent? {
+        val id = userEvent.id
         val now = LocalDateTime.now()
 
-        transaction {
-            UserEvents.update({ UserEvents.id eq id}) { row ->
+        dbQuery {
+            UserEvents.update({ UserEvents.id eq id }) { row ->
                 row[this.updateTime] = now
                 row[this.progress] = userEvent.progress
                 row[this.isCompleted] = userEvent.isCompleted
@@ -51,21 +46,18 @@ class UserEventRepository : IUserEventRepository {
         return findEventById(id)
     }
 
-    override fun findEventById(eventId: UUID): UserEvent? {
-        return transaction {
-            UserEvents
-                .select { UserEvents.id eq eventId}
-                .map { UserEvents.toUserEvent(it) }
-                .firstOrNull()
-        }
+    override suspend fun findEventById(eventId: UUID): UserEvent? = dbQuery {
+        UserEvents
+            .select { UserEvents.id eq eventId }
+            .map { UserEvents.toUserEvent(it) }
+            .firstOrNull()
+
     }
 
-    override fun findUserEvents(userId: UUID): List<UserEvent> {
-        return transaction {
-            UserEvents
-                .select { UserEvents.userId eq userId}
-                .map { UserEvents.toUserEvent(it) }
-        }
-    }
+    override suspend fun findUserEvents(userId: UUID): List<UserEvent> = dbQuery {
+        UserEvents
+            .select { UserEvents.userId eq userId }
+            .map { UserEvents.toUserEvent(it) }
 
+    }
 }

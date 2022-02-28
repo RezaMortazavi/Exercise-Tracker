@@ -1,40 +1,39 @@
 package com.octopus.domain.repository
 
+import com.octopus.config.DatabaseFactory.dbQuery
 import com.octopus.domain.*
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.select
 import java.time.LocalDate
 import java.util.*
 
 interface INotifierRepository {
-    fun create(notifier: Notifier): Notifier
-    fun batchCreate(notifiers: List<Notifier>)
-    fun findByUserId(userId: UUID): List<Notifier>
-    fun findRegisteredUsersNotActiveToday(weekDay: Int, hour: Int): List<User>
+    suspend fun create(notifier: NewNotifier): Notifier
+    suspend fun batchCreate(notifiers: List<NewNotifier>)
+    suspend fun findById(id: Long): Notifier?
+    suspend fun findByUserId(userId: UUID): List<Notifier>
+    suspend fun findRegisteredUsersNotActiveToday(weekDay: Int, hour: Int): List<User>
 }
 
 class NotifierRepository : INotifierRepository {
-    init {
-        transaction {
-            SchemaUtils.create(Notifiers)
-        }
-    }
 
-    override fun create(notifier: Notifier): Notifier {
-        return transaction {
-            notifier.copy(
-                id = Notifiers.insertAndGetId { row ->
+    override suspend fun create(notifier: NewNotifier): Notifier {
+        val id = dbQuery {
+            Notifiers.insertAndGetId { row ->
                     row[userId] = notifier.userId!!
                     row[weekDay] = notifier.weekDay
                     row[hour] = notifier.hour
                 }.value
-            )
         }
+
+        return findById(id)!!
     }
 
-    override fun batchCreate(notifiers: List<Notifier>) {
-        transaction {
-            Notifiers.batchInsert(notifiers) { item: Notifier ->
+    override suspend fun batchCreate(notifiers: List<NewNotifier>) {
+        dbQuery {
+            Notifiers.batchInsert(notifiers) { item: NewNotifier ->
                 this[Notifiers.userId] = item.userId!!
                 this[Notifiers.weekDay] = item.weekDay
                 this[Notifiers.hour] = item.hour
@@ -42,21 +41,28 @@ class NotifierRepository : INotifierRepository {
         }
     }
 
-    override fun findByUserId(userId: UUID): List<Notifier> {
-        return transaction {
-            Notifiers
-                .select { Notifiers.userId eq userId }
-                .map { Notifiers.toNotifier(it) }
-        }
+    override suspend fun findById(id: Long): Notifier? = dbQuery {
+        Notifiers
+            .select { Notifiers.id eq id }
+            .map { Notifiers.toNotifier(it) }
+            .firstOrNull()
+
     }
 
-    override fun findRegisteredUsersNotActiveToday(weekDay: Int, hour: Int): List<User> {
+    override suspend fun findByUserId(userId: UUID): List<Notifier> = dbQuery {
+        Notifiers
+            .select { Notifiers.userId eq userId }
+            .map { Notifiers.toNotifier(it) }
+
+    }
+
+    override suspend fun findRegisteredUsersNotActiveToday(weekDay: Int, hour: Int): List<User> {
         val today = LocalDate.now().atStartOfDay()
 
-        return transaction {
+        return dbQuery {
             (Notifiers innerJoin Users innerJoin UserStatuses)
                 .select {
-                            (Notifiers.weekDay eq weekDay) and
+                    (Notifiers.weekDay eq weekDay) and
                             (Notifiers.hour eq hour) and
                             (UserStatuses.lastActivityAt less today)
                 }

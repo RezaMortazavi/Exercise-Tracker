@@ -2,11 +2,11 @@ package com.octopus.web.controller
 
 import com.apurebase.kgraphql.schema.dsl.operations.MutationDSL
 import com.apurebase.kgraphql.schema.dsl.operations.QueryDSL
-import com.octopus.domain.Exercise
 import com.octopus.domain.ExerciseDifficulty
-import com.octopus.domain.ExerciseInput
 import com.octopus.domain.ExerciseType
+import com.octopus.domain.NewExercise
 import com.octopus.service.ExerciseService
+import com.octopus.web.model.ExerciseInput
 import org.slf4j.LoggerFactory
 
 class ExerciseController(private val exerciseService: ExerciseService) {
@@ -18,7 +18,7 @@ class ExerciseController(private val exerciseService: ExerciseService) {
         dsl.resolver { exerciseInput: ExerciseInput ->
             log.debug("[create] exerciseInput: $exerciseInput")
 
-            val exercise = Exercise(title = exerciseInput.title, description = exerciseInput.description,
+            val exercise = NewExercise(title = exerciseInput.title, description = exerciseInput.description,
                 duration = exerciseInput.duration, type = exerciseInput.type, difficulty = exerciseInput.difficulty)
             exerciseService.create(exercise)
         }

@@ -2,9 +2,9 @@ package com.octopus.web.controller
 
 import com.apurebase.kgraphql.schema.dsl.operations.MutationDSL
 import com.apurebase.kgraphql.schema.dsl.operations.QueryDSL
-import com.octopus.domain.UpdateUserEventInput
-import com.octopus.domain.UserEventInput
 import com.octopus.service.UserEventService
+import com.octopus.web.model.UpdateUserEventInput
+import com.octopus.web.model.UserEventInput
 import org.slf4j.LoggerFactory
 import java.util.*
 

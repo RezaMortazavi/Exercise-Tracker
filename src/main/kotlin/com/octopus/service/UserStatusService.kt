@@ -9,17 +9,17 @@ import java.util.*
 class UserStatusService(private val repository: IUserStatusRepository) {
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    fun initUserStatus(userId: UUID) = repository.create(userId).also {
+    suspend fun initUserStatus(userId: UUID) = repository.create(userId).also {
         log.info("[createUserStatus] UserStatus created: $it")
     }
 
-    fun getUserStatus(userId: UUID): UserStatus = repository.findByUserId(userId)
-        ?: throw NotFoundException("User status not found, userId: $userId")
-
-    fun recordActivity(userId: UUID) {
+    suspend fun recordActivity(userId: UUID) {
         getUserStatus(userId).apply {
             log.info("[recordActivity] userId: $userId")
             repository.update(this)
         }
     }
+
+    private suspend fun getUserStatus(userId: UUID): UserStatus = repository.findByUserId(userId)
+        ?: throw NotFoundException("User status not found, userId: $userId")
 }

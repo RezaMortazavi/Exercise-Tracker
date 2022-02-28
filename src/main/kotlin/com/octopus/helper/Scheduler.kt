@@ -13,7 +13,7 @@ abstract class Scheduler {
     protected abstract val timer: Long
     protected abstract fun isOnTime(): Boolean
 
-    suspend fun schedule(message: () -> Unit) {
+    suspend fun schedule(message: suspend () -> Unit) {
         while (true) {
             delay(timer)
             if (isOnTime()) {

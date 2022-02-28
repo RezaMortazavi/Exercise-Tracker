@@ -6,6 +6,7 @@ val exposedVersion: String by project
 val h2Version: String by project
 val hikariCpVersion: String by project
 val koinVersion: String by project
+val mockkVersion: String by project
 
 plugins {
     application
@@ -27,7 +28,6 @@ repositories {
 dependencies {
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-serialization:$ktorVersion")
 
     implementation("com.apurebase:kgraphql:$kgraphqlVersion")
     implementation("com.apurebase:kgraphql-ktor:$kgraphqlVersion")
@@ -41,7 +41,10 @@ dependencies {
     implementation("io.insert-koin:koin-ktor:$koinVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
-
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+
+    testImplementation("io.insert-koin:koin-test:$koinVersion")
+    testImplementation("io.insert-koin:koin-test-junit4:$koinVersion")
+    testImplementation("io.mockk:mockk:$mockkVersion")
 }

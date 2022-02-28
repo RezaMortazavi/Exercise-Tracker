@@ -1,37 +1,34 @@
 package com.octopus.domain.repository
 
+import com.octopus.config.DatabaseFactory.dbQuery
+import com.octopus.domain.NewNotification
 import com.octopus.domain.Notification
 import com.octopus.domain.Notifications
-import org.jetbrains.exposed.sql.SchemaUtils
+import com.octopus.domain.toNotification
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 interface INotificationRepository {
-    fun create(userId: UUID, message: String): UUID
-    fun batchCreate(notifications: List<Notification>)
-    fun findAll(): List<Notification>
+    suspend fun create(userId: UUID, message: String): UUID
+    suspend fun batchCreate(notifications: List<NewNotification>)
+    suspend fun findAll(): List<Notification>
 }
 
 class NotificationRepository : INotificationRepository {
-    init {
-        transaction{ SchemaUtils.create(Notifications) }
+
+    override suspend fun create(userId: UUID, message: String): UUID = dbQuery {
+        Notifications.insertAndGetId { row ->
+            row[this.userId] = userId
+            row[this.message] = message
+        }.value
+
     }
 
-    override fun create(userId: UUID, message: String): UUID {
-        return transaction {
-            Notifications.insertAndGetId { row ->
-                row[this.userId] = userId
-                row[this.message] = message
-            }.value
-        }
-    }
-
-    override fun batchCreate(notifications: List<Notification>) {
-        transaction {
-            Notifications.batchInsert(notifications) { item: Notification ->
+    override suspend fun batchCreate(notifications: List<NewNotification>) {
+        dbQuery {
+            Notifications.batchInsert(notifications) { item: NewNotification ->
                 this[Notifications.userId] = item.userId
                 this[Notifications.message] = item.message
 
@@ -39,12 +36,10 @@ class NotificationRepository : INotificationRepository {
         }
     }
 
-    override fun findAll(): List<Notification> {
-        return transaction {
-            Notifications
-                .selectAll()
-                .map { Notifications.toNotification(it) }
-        }
-    }
+    override suspend fun findAll(): List<Notification> = dbQuery {
+        Notifications
+            .selectAll()
+            .map { Notifications.toNotification(it) }
 
+    }
 }
