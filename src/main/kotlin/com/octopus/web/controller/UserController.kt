@@ -6,6 +6,7 @@ import com.octopus.domain.NewNotifier
 import com.octopus.domain.NewUser
 import com.octopus.service.UserService
 import com.octopus.web.model.UserInput
+import io.ktor.features.*
 import java.util.*
 
 class UserController(private val userService: UserService) {
@@ -15,6 +16,7 @@ class UserController(private val userService: UserService) {
         dsl.resolver { userInput: UserInput ->
             val user = NewUser(email = userInput.email, firstName = userInput.firstName, lastName = userInput.lastName)
             val notifiers = userInput.notifiers?.let { notifierInput ->
+                if (!notifierInput.validate()) throw BadRequestException("Week day or hour is not valid")
                 notifierInput.weekDay.map { weekDay ->
                     NewNotifier(weekDay = weekDay, hour = notifierInput.hour)
                 }
