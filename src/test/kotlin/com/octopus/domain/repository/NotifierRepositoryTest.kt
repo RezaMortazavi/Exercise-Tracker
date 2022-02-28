@@ -29,19 +29,19 @@ class NotifierRepositoryTest {
         // registered user not active today
         val user1 = userRepository.create(NewUser("reza@email.com", "Reza", "Mortazavi"))
         val user1Status = userStatusRepository.create(user1.id)
-        userStatusRepository.update(user1Status.copy(lastActivityAt = LocalDate.now().minusDays(1).atStartOfDay()))
+        userStatusRepository.update(user1Status, LocalDate.now().minusDays(1).atStartOfDay())
         notifierRepository.create(NewNotifier(user1.id, Calendar.getInstance().get(Calendar.DAY_OF_WEEK), Calendar.getInstance().get(Calendar.HOUR_OF_DAY)))
 
         // registered user active today
         val user2 = userRepository.create(NewUser("rezaa@email.com", "Reza", "Mortazavi"))
         val user2Status = userStatusRepository.create(user2.id)
-        userStatusRepository.update(user2Status.copy(lastActivityAt = LocalDate.now().atStartOfDay()))
+        userStatusRepository.update(user2Status, LocalDate.now().atStartOfDay())
         notifierRepository.create(NewNotifier(user2.id, Calendar.getInstance().get(Calendar.DAY_OF_WEEK), Calendar.getInstance().get(Calendar.HOUR_OF_DAY)))
 
         // not register user not active today
         val user3 = userRepository.create(NewUser("rezaaa@email.com", "Reza", "Mortazavi"))
         val user3Status = userStatusRepository.create(user3.id)
-        userStatusRepository.update(user3Status.copy(lastActivityAt = LocalDate.now().minusDays(1).atStartOfDay()))
+        userStatusRepository.update(user3Status, LocalDate.now().minusDays(1).atStartOfDay())
 
         // when
         val notActiveToday = notifierRepository.findRegisteredUsersNotActiveToday(
